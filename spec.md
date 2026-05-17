@@ -29,7 +29,7 @@
 
 ### 1.1 Latar Belakang
 
-**PawangCuaca** adalah platform citizen science berbasis web yang memungkinkan masyarakat untuk memvalidasi akurasi prediksi cuaca makro (berbasis satelit/API publik) dengan laporan ground-truth dari lapangan. Masalah yang diselesaikan: prediksi cuaca dari provider besar seperti OpenWeatherMap sering meleset di tingkat kecamatan/mikro, menyebabkan inefisiensi mobilitas warga kota.
+**PawangCuaca** adalah platform citizen science berbasis web yang memungkinkan masyarakat untuk memvalidasi akurasi prediksi cuaca makro (berbasis satelit/API publik) dengan laporan ground-truth dari lapangan. Masalah yang diselesaikan: prediksi cuaca dari provider besar seperti Open-Meteo sering meleset di tingkat kecamatan/mikro, menyebabkan inefisiensi mobilitas warga kota.
 
 ### 1.2 Tagline
 > *"Cuaca dari warga, untuk warga."*
@@ -88,7 +88,7 @@
            │                          │
            ▼                          ▼
 ┌─────────────────┐       ┌───────────────────────────┐
-│ OpenWeatherMap  │       │   PostgreSQL Database      │
+│   Open-Meteo    │       │   PostgreSQL Database      │
 │   External API  │       │   (Managed via pgAdmin /   │
 │  (HTTP/REST)    │       │    aaPanel on VPS)         │
 └─────────────────┘       └───────────────────────────┘
@@ -103,7 +103,7 @@ User buka halaman
     → GET /api/weather?lat=X&lon=Y
     → Express cek Redis cache (TTL 10 menit)
         → Cache hit: return data
-        → Cache miss: fetch OpenWeatherMap API
+        → Cache miss: fetch Open-Meteo API
             → Simpan ke cache
             → Return ke client
     → React render cuaca + voting interface
@@ -182,7 +182,7 @@ pawangcuaca/
 │   │   │   ├── errorHandler.js
 │   │   │   └── validateRequest.js
 │   │   ├── services/
-│   │   │   ├── openWeatherService.js
+│       │   │   ├── openMeteoService.js
 │   │   │   ├── cacheService.js       # node-cache atau Redis
 │   │   │   └── voteService.js
 │   │   ├── db/
@@ -234,7 +234,7 @@ pawangcuaca/
 | express-rate-limit | ^7.x | Rate limiting |
 | helmet | ^7.x | HTTP security headers |
 | cors | ^2.x | CORS middleware |
-| axios | ^1.x | Fetch ke OpenWeatherMap |
+| axios | ^1.x | Fetch ke Open-Meteo |
 | joi | ^17.x | Request validation |
 | winston | ^3.x | Structured logging |
 | dotenv | ^16.x | Environment variables |
@@ -388,11 +388,10 @@ GET /api/weather?lat=-6.9175&lon=107.6191
       "feels_like_c": 21.8,
       "humidity": 78,
       "wind_speed_kmh": 12.6,
-      "weather_code": 500,
+      "weather_code": 63,
       "weather_main": "Rain",
-      "weather_description": "light rain",
-      "weather_icon": "10d",
-      "icon_url": "https://openweathermap.org/img/wn/10d@2x.png",
+      "weather_description": "Hujan",
+      "weather_emoji": "🌧️",
       "uvi": 3.2,
       "visibility_m": 8000,
       "cloud_pct": 85
@@ -403,8 +402,8 @@ GET /api/weather?lat=-6.9175&lon=107.6191
         "hour_label": "14:00",
         "temp_c": 22.4,
         "pop": 0.85,
-        "weather_icon": "10d",
-        "weather_description": "light rain"
+        "weather_emoji": "🌧️",
+        "weather_description": "Hujan"
       }
       // ... 11 item berikutnya (total 12 jam)
     ],
@@ -835,8 +834,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      connectSrc: ["'self'", "https://api.openweathermap.org"],
-      imgSrc:     ["'self'", "https://openweathermap.org", "data:"],
+      connectSrc: ["'self'", "https://api.open-meteo.com", "https://nominatim.openstreetmap.org"],
+      imgSrc:     ["'self'", "data:"],
       scriptSrc:  ["'self'"],
       styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc:    ["'self'", "https://fonts.gstatic.com"],
@@ -921,11 +920,11 @@ GRANT SELECT, INSERT, UPDATE ON locations, votes, vote_aggregates TO pawangcuaca
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO pawangcuaca_user;
 ```
 
-### 9.7 API Key Protection
+### 9.7 API Access
 
-- OpenWeatherMap API key **hanya** ada di environment variable server-side
+- Open-Meteo API bersifat gratis dan tidak memerlukan API key untuk penggunaan non-komersial
 - Client **tidak pernah** menerima API key eksternal dalam response
-- Key dirotasi jika terdeteksi di logs atau git history
+- Untuk penggunaan komersial, gunakan API key Open-Meteo di environment variable server-side
 
 ---
 
@@ -1092,9 +1091,8 @@ DATABASE_URL=postgresql://pawangcuaca_user:your_strong_password@localhost:5432/p
 DB_POOL_MIN=2
 DB_POOL_MAX=10
 
-# External API
-OPENWEATHERMAP_API_KEY=your_owm_api_key_here
-OPENWEATHERMAP_BASE_URL=https://api.openweathermap.org/data/3.0
+# External API (Open-Meteo - free, no API key required)
+# https://open-meteo.com/en/docs
 
 # Cache
 CACHE_TTL_SECONDS=600
@@ -1115,7 +1113,7 @@ VITE_API_BASE_URL=https://pawangcuaca.space/api
 VITE_APP_VERSION=1.0.0
 ```
 
-> ⚠️ Jangan pernah taruh API key OpenWeatherMap di `.env` client.
+> ⚠️ Open-Meteo tidak memerlukan API key untuk penggunaan non-komersial.
 
 ---
 
@@ -1298,11 +1296,11 @@ client/src/__tests__/
 
 ## Appendix
 
-### A. OpenWeatherMap API Reference
+### A. Open-Meteo API Reference
 
-- Endpoint yang dipakai: `One Call API 3.0`
-- URL: `https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&appid={key}&units=metric&lang=id&exclude=minutely,daily,alerts`
-- Biaya: Free tier = 1000 calls/hari, berbayar setelah itu
+- Endpoint yang dipakai: `Weather Forecast API`
+- URL: `https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,cloud_cover,wind_speed_10m,visibility&daily=uv_index_max&timezone=auto&forecast_days=2`
+- Biaya: Gratis untuk penggunaan non-komersial (max 10.000 calls/hari)
 
 ### B. Geohash Precision Reference
 

@@ -25,7 +25,6 @@ function useVoting(lat, lon, forecastHour) {
   const fetchVotes = useCallback(async () => {
     if (!lat || !lon || !forecastHour) return;
 
-    setLoading(true);
     try {
       const response = await weatherApi.getVotes(lat, lon, 48);
       if (response.data.success) {
@@ -41,8 +40,6 @@ function useVoting(lat, lon, forecastHour) {
       }
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }, [lat, lon, forecastHour]);
 

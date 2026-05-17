@@ -18,8 +18,8 @@ app.use(helmet({
   contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
-      connectSrc: ["'self'", "https://api.openweathermap.org"],
-      imgSrc: ["'self'", "https://openweathermap.org", "data:"],
+      connectSrc: ["'self'", "https://api.open-meteo.com", "https://nominatim.openstreetmap.org"],
+      imgSrc: ["'self'", "data:"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],

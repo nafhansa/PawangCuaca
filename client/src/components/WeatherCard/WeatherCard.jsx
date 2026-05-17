@@ -26,13 +26,9 @@ function WeatherCard({ weather, accuracy }) {
       animate="visible"
     >
       <div className="weather-icon-container">
-        {current.icon_url && (
-          <img
-            src={current.icon_url}
-            alt={current.weather_description}
-            className="weather-icon"
-          />
-        )}
+        <span className="weather-emoji" role="img" aria-label={current.weather_description}>
+          {current.weather_emoji}
+        </span>
       </div>
 
       <div className="weather-temp">

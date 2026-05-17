@@ -238,6 +238,59 @@ body {
   margin-bottom: var(--space-2);
 }
 
+.recent-votes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.recent-vote-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.recent-vote-item:hover {
+  border-color: var(--color-sky-clear);
+  background: var(--color-bg-elevated);
+}
+
+.recent-vote-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.recent-vote-icon.up {
+  color: var(--color-upvote);
+}
+
+.recent-vote-icon.down {
+  color: var(--color-downvote);
+}
+
+.recent-vote-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-vote-label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.recent-vote-time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 .leaderboard-list {
   display: flex;
   flex-direction: column;

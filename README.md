@@ -47,7 +47,7 @@ Lihat `spec.md` untuk detail deployment steps.
 
 - **Frontend:** React, Vite, Framer Motion, Leaflet
 - **Backend:** Node.js, Express, PostgreSQL
-- **Weather API:** OpenWeatherMap One Call API 3.0
+- **Weather API:** Open-Meteo Weather Forecast API
 
 ## License
 

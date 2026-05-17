@@ -1,5 +1,5 @@
 const cacheService = require('../services/cacheService');
-const openWeatherService = require('../services/openWeatherService');
+const openMeteoService = require('../services/openMeteoService');
 const logger = require('../utils/logger');
 
 async function getWeather(req, res, next) {
@@ -18,9 +18,9 @@ async function getWeather(req, res, next) {
       });
     }
 
-    const owmData = await openWeatherService.fetchWeather(lat, lon);
-    const current = openWeatherService.parseCurrentWeather(owmData, lat, lon);
-    const hourly = openWeatherService.parseHourlyForecast(owmData, 12);
+    const meteoData = await openMeteoService.fetchWeather(lat, lon);
+    const current = openMeteoService.parseCurrentWeather(meteoData, lat, lon);
+    const hourly = openMeteoService.parseHourlyForecast(meteoData, 12);
 
     const responseData = {
       location: {

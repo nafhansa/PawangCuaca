@@ -2,6 +2,37 @@ const { pool } = require('../db/pool');
 const geoHash = require('../utils/geoHash');
 const { ConflictError, ValidationError } = require('../utils/errors');
 const logger = require('../utils/logger');
+const axios = require('axios');
+
+async function reverseGeocode(lat, lon) {
+  try {
+    const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+      params: {
+        lat,
+        lon,
+        format: 'json',
+        zoom: 12,
+        addressdetails: 1,
+      },
+      headers: {
+        'User-Agent': 'PawangCuaca/1.0',
+      },
+      timeout: 5000,
+    });
+
+    const addr = response.data.address;
+    if (!addr) return null;
+
+    return [
+      addr.suburb || addr.neighbourhood || addr.quarter,
+      addr.city || addr.town || addr.village || addr.municipality,
+      addr.state,
+    ].filter(Boolean).join(', ') || null;
+  } catch (err) {
+    logger.error('Reverse geocode error', { error: err.message });
+    return null;
+  }
+}
 
 async function getOrCreateLocation(lat, lon) {
   const gh = geoHash.encode(parseFloat(lat), parseFloat(lon), 5);
@@ -15,9 +46,11 @@ async function getOrCreateLocation(lat, lon) {
     return existing.rows[0];
   }
 
+  const label = await reverseGeocode(lat, lon);
+
   const inserted = await pool.query(
-    'INSERT INTO locations (geohash, lat, lon) VALUES ($1, $2, $3) RETURNING id, geohash, lat, lon, label',
-    [gh, parseFloat(lat), parseFloat(lon)]
+    'INSERT INTO locations (geohash, lat, lon, label) VALUES ($1, $2, $3, $4) RETURNING id, geohash, lat, lon, label',
+    [gh, parseFloat(lat), parseFloat(lon), label]
   );
 
   return inserted.rows[0];
@@ -155,9 +188,33 @@ async function getLocationLeaderboard(limit = 10) {
   }));
 }
 
+async function getRecentVotes(limit = 20) {
+  const result = await pool.query(
+    `SELECT v.id, v.vote_type, v.forecast_hour, v.created_at,
+            l.geohash, l.label, l.lat, l.lon
+     FROM votes v
+     JOIN locations l ON v.location_id = l.id
+     ORDER BY v.created_at DESC
+     LIMIT $1`,
+    [limit]
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    vote_type: row.vote_type,
+    forecast_hour: row.forecast_hour.toISOString(),
+    created_at: row.created_at.toISOString(),
+    geohash: row.geohash,
+    label: row.label || row.geohash,
+    lat: parseFloat(row.lat),
+    lon: parseFloat(row.lon),
+  }));
+}
+
 module.exports = {
   getOrCreateLocation,
   submitVote,
   getVotesByHour,
   getLocationLeaderboard,
+  getRecentVotes,
 };

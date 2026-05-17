@@ -28,11 +28,9 @@ function HourlyForecast({ hourly }) {
             custom={index}
           >
             <span className="hourly-time">{hour.hour_label}</span>
-            <img
-              src={`https://openweathermap.org/img/wn/${hour.weather_icon}.png`}
-              alt={hour.weather_description}
-              className="hourly-icon"
-            />
+            <span className="hourly-emoji" role="img" aria-label={hour.weather_description}>
+              {hour.weather_emoji}
+            </span>
             <span className="hourly-temp">{formatTemperature(hour.temp_c)}</span>
             {hour.pop > 0.3 && (
               <span className="hourly-pop">{Math.round(hour.pop * 100)}%</span>

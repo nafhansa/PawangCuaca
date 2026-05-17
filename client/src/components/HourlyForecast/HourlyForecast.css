@@ -55,9 +55,9 @@
   color: var(--color-text-secondary);
 }
 
-.hourly-icon {
-  width: 48px;
-  height: 48px;
+.hourly-emoji {
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .hourly-temp {

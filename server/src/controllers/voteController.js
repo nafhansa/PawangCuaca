@@ -29,4 +29,18 @@ async function submitVote(req, res, next) {
   }
 }
 
-module.exports = { submitVote };
+async function getRecentVotes(req, res, next) {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const votes = await voteService.getRecentVotes(Math.min(limit, 50));
+
+    return res.json({
+      success: true,
+      data: votes,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { submitVote, getRecentVotes };

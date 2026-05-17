@@ -20,7 +20,7 @@ function AboutPage() {
       <div className="about-section">
         <h3>Masalah yang Diselesaikan</h3>
         <p>
-          Prediksi cuaca dari provider besar seperti OpenWeatherMap sering meleset di tingkat
+          Prediksi cuaca dari provider besar seperti Open-Meteo sering meleset di tingkat
           kecamatan/mikro, menyebabkan inefisiensi mobilitas warga kota. PawangCuaca hadir
           untuk menjembatani gap ini dengan data crowdsourced dari pengguna di lapangan.
         </p>
@@ -50,7 +50,7 @@ function AboutPage() {
         <ul>
           <li>Frontend: React + Vite + Framer Motion + Leaflet</li>
           <li>Backend: Node.js + Express + PostgreSQL</li>
-          <li>Weather Data: OpenWeatherMap One Call API 3.0</li>
+          <li>Weather Data: Open-Meteo Weather Forecast API</li>
         </ul>
       </div>
 

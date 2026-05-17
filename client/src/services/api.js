@@ -36,6 +36,7 @@ export const weatherApi = {
 
 export const votesApi = {
   submitVote: (data) => api.post('/votes', data),
+  getRecentVotes: (limit = 20) => api.get('/votes/recent', { params: { limit } }),
 };
 
 export const locationsApi = {
