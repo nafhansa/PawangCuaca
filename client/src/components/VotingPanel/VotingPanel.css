@@ -1,0 +1,120 @@
+.voting-panel {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.voting-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.vote-score-bar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-bg-elevated);
+}
+
+.vote-score-fill-up {
+  background: var(--color-upvote);
+  transition: width 0.3s ease;
+}
+
+.vote-score-fill-down {
+  background: var(--color-downvote);
+  transition: width 0.3s ease;
+}
+
+.vote-stats {
+  display: flex;
+  justify-content: space-around;
+}
+
+.vote-stat {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.vote-stat.up {
+  color: var(--color-upvote);
+}
+
+.vote-stat.down {
+  color: var(--color-downvote);
+}
+
+.vote-buttons {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.vote-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.vote-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.vote-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.vote-btn.upvote:hover:not(:disabled),
+.vote-btn.upvote.active {
+  border-color: var(--color-upvote);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.vote-btn.downvote:hover:not(:disabled),
+.vote-btn.downvote.active {
+  border-color: var(--color-downvote);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.vote-icon {
+  font-size: 1.5rem;
+}
+
+.vote-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.vote-confirmed {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-success);
+  margin: 0;
+}
+
+.vote-loading {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}

@@ -1,0 +1,34 @@
+require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const { pool } = require('./pool');
+
+async function runMigrations() {
+  const migrationsDir = path.join(__dirname, 'migrations');
+  const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+
+  console.log(`Found ${files.length} migration files`);
+
+  for (const file of files) {
+    const filePath = path.join(migrationsDir, file);
+    const sql = fs.readFileSync(filePath, 'utf8');
+
+    console.log(`Running migration: ${file}`);
+    try {
+      await pool.query(sql);
+      console.log(`✅ ${file} completed`);
+    } catch (err) {
+      if (err.code === '42P07') {
+        console.log(`⏭️  ${file} already exists, skipping`);
+      } else {
+        console.error(`❌ ${file} failed:`, err.message);
+        process.exit(1);
+      }
+    }
+  }
+
+  console.log('All migrations completed');
+  await pool.end();
+}
+
+runMigrations();

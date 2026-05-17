@@ -1,34 +1,30 @@
 {
-  "name": "server",
+  "name": "pawangcuaca-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "PawangCuaca API Server",
+  "main": "server.js",
   "scripts": {
-    "test": "jest --coverage",
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "migrate": "node src/db/migrate.js",
+    "test": "jest --coverage",
     "test:watch": "jest --watch"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "axios": "^1.16.1",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2",
-    "helmet": "^8.1.0",
-    "joi": "^18.2.1",
-    "ngeohash": "^0.6.3",
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "helmet": "^7.1.0",
+    "joi": "^17.13.3",
     "node-cache": "^5.1.2",
-    "pg": "^8.20.0",
-    "winston": "^3.19.0"
+    "pg": "^8.12.0",
+    "winston": "^3.13.0"
   },
   "devDependencies": {
-    "jest": "^30.4.2",
-    "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.0.0"
   }
 }
