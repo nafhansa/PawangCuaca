@@ -1,5 +1,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG VITE_API_BASE_URL=https://pawangcuaca.space/api
+ARG VITE_APP_VERSION=1.0.0
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
 COPY package*.json ./
 RUN npm ci
 COPY . .
