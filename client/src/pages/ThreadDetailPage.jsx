@@ -23,7 +23,7 @@ export default function ThreadDetailPage() {
     try {
       const res = await threadsApi.getById(id);
       setThread(res.data.data.thread);
-    } catch { navigate('/threads'); } finally { setLoading(false); }
+    } catch { navigate('/dashboard/threads'); } finally { setLoading(false); }
   };
 
   const handleSubmitPost = async (e) => {
@@ -53,7 +53,7 @@ export default function ThreadDetailPage() {
     if (!window.confirm('Yakin ingin menghapus thread ini?')) return;
     try {
       await threadsApi.delete(id);
-      navigate('/threads');
+      navigate('/dashboard/threads');
     } catch (err) { alert(err.message); }
   };
 
@@ -65,7 +65,7 @@ export default function ThreadDetailPage() {
 
   return (
     <motion.div className="detail-page" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <button className="btn-back" onClick={() => navigate('/threads')}>← Kembali</button>
+      <button className="btn-back" onClick={() => navigate('/dashboard/threads')}>← Kembali</button>
 
       <div className="detail-card">
         <div className="detail-header">

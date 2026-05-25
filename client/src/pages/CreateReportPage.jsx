@@ -40,7 +40,7 @@ export default function CreateReportPage() {
       if (form.lon) formData.append('lon', form.lon);
       if (media) formData.append('media', media);
       await reportsApi.create(formData);
-      navigate('/reports');
+      navigate('/dashboard/laporan');
     } catch (err) {
       setError(err.message);
     } finally {

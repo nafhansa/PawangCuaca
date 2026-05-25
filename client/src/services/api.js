@@ -27,7 +27,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('pwc_token');
-      if (!window.location.pathname.includes('/login')) {
+      const publicPaths = ['/', '/tentang', '/login', '/register'];
+      const isPublicPage = publicPaths.some((path) => window.location.pathname === path);
+      if (!isPublicPage && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
     }
@@ -49,6 +51,7 @@ export const authApi = {
 export const adminApi = {
   getUsers: (params) => api.get('/admin/users', { params }),
   getStats: () => api.get('/admin/stats'),
+  getDetailedStats: () => api.get('/admin/stats/detailed'),
   approveUser: (id) => api.put(`/admin/users/${id}/approve`),
   rejectUser: (id) => api.put(`/admin/users/${id}/reject`),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
@@ -85,6 +88,11 @@ export const weatherApi = {
 export const votesApi = {
   submitVote: (data) => api.post('/votes', data),
   getRecentVotes: (limit = 20) => api.get('/votes/recent', { params: { limit } }),
+  getMyVotes: (limit = 50) => api.get('/votes/my', { params: { limit } }),
+};
+
+export const activityApi = {
+  getMyActivity: (limit = 50) => api.get('/activity/my', { params: { limit } }),
 };
 
 export const locationsApi = {

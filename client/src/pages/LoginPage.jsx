@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const user = await login(email, password);
       if (user.role === 'superadmin') navigate('/admin');
-      else navigate('/');
+      else navigate('/dashboard/cuaca');
     } catch (err) {
       setError(err.message || 'Login gagal.');
     } finally {

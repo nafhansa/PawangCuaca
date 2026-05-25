@@ -22,7 +22,7 @@ export default function ReportDetailPage() {
       setReport(res.data.data.report);
       setUserVote(res.data.data.userVote);
     } catch {
-      navigate('/reports');
+      navigate('/dashboard/laporan');
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ export default function ReportDetailPage() {
     if (!window.confirm('Yakin ingin menghapus laporan ini?')) return;
     try {
       await reportsApi.delete(id);
-      navigate('/reports');
+      navigate('/dashboard/laporan');
     } catch (err) {
       alert(err.message);
     }
@@ -59,7 +59,7 @@ export default function ReportDetailPage() {
 
   return (
     <motion.div className="detail-page" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <button className="btn-back" onClick={() => navigate('/reports')}>← Kembali</button>
+      <button className="btn-back" onClick={() => navigate('/dashboard/laporan')}>← Kembali</button>
 
       <div className="detail-card">
         <div className="detail-header">

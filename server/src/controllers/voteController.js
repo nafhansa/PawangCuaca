@@ -12,12 +12,15 @@ async function submitVote(req, res, next) {
 
     const location = await voteService.getOrCreateLocation(lat, lon);
 
+    const userId = req.user?.id || null;
+
     const result = await voteService.submitVote(
       location.id,
       forecast_hour,
       vote_type,
       voterHash,
-      ipHash
+      ipHash,
+      userId
     );
 
     return res.status(201).json({
@@ -32,7 +35,8 @@ async function submitVote(req, res, next) {
 async function getRecentVotes(req, res, next) {
   try {
     const limit = parseInt(req.query.limit, 10) || 20;
-    const votes = await voteService.getRecentVotes(Math.min(limit, 50));
+    const offset = parseInt(req.query.offset, 10) || 0;
+    const votes = await voteService.getRecentVotes(Math.min(limit, 50), offset);
 
     return res.json({
       success: true,
@@ -43,4 +47,19 @@ async function getRecentVotes(req, res, next) {
   }
 }
 
-module.exports = { submitVote, getRecentVotes };
+async function getMyVotes(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const limit = parseInt(req.query.limit, 10) || 50;
+    const votes = await voteService.getUserVotes(userId, Math.min(limit, 100));
+
+    return res.json({
+      success: true,
+      data: votes,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { submitVote, getRecentVotes, getMyVotes };

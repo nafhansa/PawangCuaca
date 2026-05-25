@@ -56,7 +56,7 @@ async function getOrCreateLocation(lat, lon) {
   return inserted.rows[0];
 }
 
-async function submitVote(locationId, forecastHour, voteType, voterHash, ipHash) {
+async function submitVote(locationId, forecastHour, voteType, voterHash, ipHash, userId = null) {
   const client = await pool.connect();
 
   try {
@@ -73,8 +73,8 @@ async function submitVote(locationId, forecastHour, voteType, voterHash, ipHash)
     }
 
     const voteResult = await client.query(
-      'INSERT INTO votes (location_id, forecast_hour, vote_type, voter_hash, ip_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [locationId, forecastHour, voteType, voterHash, ipHash]
+      'INSERT INTO votes (location_id, forecast_hour, vote_type, voter_hash, ip_hash, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [locationId, forecastHour, voteType, voterHash, ipHash, userId]
     );
 
     const upsertResult = await client.query(
@@ -188,15 +188,42 @@ async function getLocationLeaderboard(limit = 10) {
   }));
 }
 
-async function getRecentVotes(limit = 20) {
+async function getRecentVotes(limit = 20, offset = 0) {
+  const result = await pool.query(
+    `SELECT v.id, v.vote_type, v.forecast_hour, v.created_at,
+            l.geohash, l.label, l.lat, l.lon,
+            u.username as user_username
+     FROM votes v
+     JOIN locations l ON v.location_id = l.id
+     LEFT JOIN users u ON v.user_id = u.id
+     ORDER BY v.created_at DESC
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    vote_type: row.vote_type,
+    forecast_hour: row.forecast_hour.toISOString(),
+    created_at: row.created_at.toISOString(),
+    geohash: row.geohash,
+    label: row.label || row.geohash,
+    lat: parseFloat(row.lat),
+    lon: parseFloat(row.lon),
+    user_username: row.user_username,
+  }));
+}
+
+async function getUserVotes(userId, limit = 50) {
   const result = await pool.query(
     `SELECT v.id, v.vote_type, v.forecast_hour, v.created_at,
             l.geohash, l.label, l.lat, l.lon
      FROM votes v
      JOIN locations l ON v.location_id = l.id
+     WHERE v.user_id = $1
      ORDER BY v.created_at DESC
-     LIMIT $1`,
-    [limit]
+     LIMIT $2`,
+    [userId, limit]
   );
 
   return result.rows.map((row) => ({
@@ -217,4 +244,5 @@ module.exports = {
   getVotesByHour,
   getLocationLeaderboard,
   getRecentVotes,
+  getUserVotes,
 };

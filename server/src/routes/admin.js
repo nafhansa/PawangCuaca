@@ -8,6 +8,7 @@ router.use(authMiddleware, roleMiddleware('superadmin'));
 
 router.get('/users', adminController.getUsers);
 router.get('/stats', adminController.getStats);
+router.get('/stats/detailed', adminController.getDetailedStats);
 router.put('/users/:id/approve', adminController.approveUser);
 router.put('/users/:id/reject', adminController.rejectUser);
 router.delete('/users/:id', adminController.deleteUser);

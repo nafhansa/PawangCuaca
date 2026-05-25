@@ -16,6 +16,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const reportRoutes = require('./routes/reports');
 const threadRoutes = require('./routes/threads');
+const activityRoutes = require('./routes/activity');
 
 const app = express();
 
@@ -71,9 +72,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/threads', threadRoutes);
-app.use('/api/weather', weatherRoutes);
-app.use('/api/votes', votesRoutes);
-app.use('/api/locations', locationsRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.use(errorHandler);
 

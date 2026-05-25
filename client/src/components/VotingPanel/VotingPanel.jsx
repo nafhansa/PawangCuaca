@@ -10,7 +10,7 @@ const voteSuccessVariants = {
   },
 };
 
-function VotingPanel({ votes, userVote, onVote, loading }) {
+function VotingPanel({ votes, userVote, onVote, loading, lat, lon, locationLabel }) {
   const [animState, setAnimState] = useState(null);
 
   const handleVote = async (voteType) => {
@@ -20,6 +20,16 @@ function VotingPanel({ votes, userVote, onVote, loading }) {
     await onVote(voteType);
 
     setTimeout(() => setAnimState(null), 600);
+  };
+
+  const handleShare = () => {
+    if (!userVote) return;
+    const voteText = userVote === 'upvote' ? '✅ AKURAT' : '❌ MELESET';
+    const locationText = locationLabel || `${lat?.toFixed(2)}, ${lon?.toFixed(2)}`;
+    const text = `Cuaca di ${locationText} ${voteText} menurut warga!\n\nAyo pantau cuaca bersama 👇`;
+    const url = `${window.location.origin}/dashboard/cuaca`;
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(tweetUrl, '_blank', 'width=550,height=420');
   };
 
   const total = votes?.total || 0;
@@ -80,7 +90,15 @@ function VotingPanel({ votes, userVote, onVote, loading }) {
       </div>
 
       {userVote && (
-        <p className="vote-confirmed">Vote kamu sudah tercatat!</p>
+        <div className="vote-confirmed-section">
+          <p className="vote-confirmed">Vote kamu sudah tercatat!</p>
+          <button className="vote-share-btn" onClick={handleShare}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            Bagikan ke X
+          </button>
+        </div>
       )}
 
       {loading && !userVote && (
