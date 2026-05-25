@@ -45,13 +45,14 @@ Platform citizen science berbasis web untuk memvalidasi akurasi prediksi cuaca d
 ### Production (VPS)
 
 ```
-Internet → System Nginx (:80/:443 SSL)
-  → proxy_pass → Docker Nginx (:8080 → container :80)
-                   ├── /            → React SPA (Client Container)
-                   ├── /api/*       → Express API (Server Container :3004)
-                   └── /uploads/*   → Express Static (Server Container :3004)
-                                          ↓
-                                  PostgreSQL (DB Container :5432 internal, :5433 host)
+Internet → Cloudflare (DNS + SSL + Tunnel)
+  → http://localhost:8081 (VPS)
+    → Docker Nginx (:8081 → container :80)
+        ├── /           → Client Container (React SPA)
+        ├── /api/*      → Server Container (:3004 Express)
+        └── /uploads/*  → Server Container (:3004 Express Static)
+                                ↓
+                        DB Container (PostgreSQL :5432, host :5433)
 ```
 
 ### Port Allocation (VPS)
@@ -62,24 +63,24 @@ Internet → System Nginx (:80/:443 SSL)
 | 3001 | nafhan | jobtracker-staging (Next.js) |
 | 3002 | it-gdgoc | gdgoc-fe-prod (Vite preview) |
 | 3003 | it-gdgoc | gdgoc-be-prod (Bun) |
-| 3004 | pawangcuaca | pawangcuaca server (Docker — internal only) |
+| 3004 | pawangcuaca | pawangcuaca server (Docker internal) |
 | 3006 | faris | faris app (Node) |
-| 5433 | pawangcuaca | PostgreSQL (Docker — host debug access) |
-| 8080 | pawangcuaca | Docker Nginx (reverse proxy) |
+| 5433 | pawangcuaca | PostgreSQL (Docker host access) |
+| 8081 | pawangcuaca | Docker Nginx (Cloudflare Tunnel target) |
 
 ### Docker Container Architecture
 
-| Container | Image | Port (host→container) | Fungsi |
+| Container | Image | Port (host->container) | Fungsi |
 |---|---|---|---|
-| `pawangcuaca_nginx` | nginx:alpine | 8080→80 | Reverse proxy, routing /, /api/, /uploads |
-| `pawangcuaca_client` | Custom (node→nginx) | 80 (internal) | React SPA |
+| `pawangcuaca_nginx` | nginx:alpine | 8081->80 | Reverse proxy, routing /, /api/, /uploads |
+| `pawangcuaca_client` | Custom (node->nginx) | 80 (internal) | React SPA |
 | `pawangcuaca_server` | Custom (node:20-alpine) | 3004 (internal) | Express REST API |
-| `pawangcuaca_db` | postgres:16-alpine | 5433→5432 | PostgreSQL database |
+| `pawangcuaca_db` | postgres:16-alpine | 5433->5432 | PostgreSQL database |
 
 ### Networks
 
 - `pawangcuaca-internal` — DB <-> Server (tidak ter-expose ke internet)
-- `pawcuaca-external` — Nginx <-> Client <-> Server
+- `pawangcuaca-external` — Nginx <-> Client <-> Server
 
 ### Volumes
 
@@ -99,7 +100,7 @@ Internet → System Nginx (:80/:443 SSL)
 | Upload | Multer (local filesystem) |
 | Security | Helmet, CORS, express-rate-limit, Joi validation |
 | Database | PostgreSQL 16, pg (node-postgres) |
-| Infra | Docker Compose, Nginx (system + Docker) |
+| Infra | Docker Compose, Nginx (Docker), Cloudflare Tunnel |
 | Weather API | Open-Meteo (gratis, tanpa API key) |
 
 ---
@@ -116,7 +117,7 @@ pawangcuaca/
 │   │   ├── services/            # API service (axios)
 │   │   ├── hooks/               # Custom React hooks
 │   │   └── utils/               # Utilities
-│   ├── Dockerfile               # Multi-stage: node build → nginx serve
+│   ├── Dockerfile               # Multi-stage: node build -> nginx serve
 │   ├── nginx.conf               # Client-internal nginx (SPA fallback)
 │   └── package.json
 ├── server/                      # Node.js + Express Backend
@@ -133,13 +134,12 @@ pawangcuaca/
 │   ├── uploads/                 # Media upload directory
 │   ├── seed.js                  # SuperAdmin seeder
 │   ├── entrypoint.sh            # Docker entrypoint (migrate + start)
-│   ├── Dockerfile               # Multi-stage: node build → node run
+│   ├── Dockerfile               # Multi-stage: node build -> node run
 │   └── package.json
 ├── nginx/                       # Nginx configs
-│   ├── pawangcuaca.conf         # System nginx (VPS) — SSL reverse proxy ke :8080
-│   └── pawangcuaca-docker.conf  # Docker nginx — upstream server:3004
+│   ├── pawangcuaca.conf         # System nginx — reverse proxy ke Docker :8081
+│   └── pawangcuaca-docker.conf  # Docker nginx — upstream server:3004, client:80
 ├── docker-compose.yml           # Docker Compose orchestration
-├── ecosystem.config.js          # PM2 config (fallback, non-Docker)
 ├── .env                         # Root env (Docker Compose variables, gitignored)
 └── docs/
     └── diagrams.md              # UML & Flowchart diagrams
@@ -212,8 +212,8 @@ cd pawangcuaca
 cat > .env << 'EOF'
 DB_PASSWORD=pawangcuaca_secure_2026
 JWT_SECRET=ganti_ini_dengan_string_random_yang_panjang
-CLIENT_ORIGIN=http://localhost:8080
-CLIENT_API_URL=http://localhost:8080/api
+CLIENT_ORIGIN=http://localhost:8081
+CLIENT_API_URL=http://localhost:8081/api
 EOF
 
 # 3. Build & jalankan semua container
@@ -226,7 +226,7 @@ docker compose logs -f db
 # 5. Seed SuperAdmin (hanya sekali)
 docker compose exec server node seed.js
 
-# 6. Buka browser → http://localhost:8080
+# 6. Buka browser -> http://localhost:8081
 ```
 
 **Selesai.** Database, backend, frontend, dan reverse proxy semuanya berjalan di Docker.
@@ -240,10 +240,10 @@ docker compose exec server node seed.js
 
 | URL | Deskripsi |
 |---|---|
-| http://localhost:8080 | Halaman Utama |
-| http://localhost:8080/api/health | API Health Check |
-| http://localhost:8080/login | Halaman Login |
-| http://localhost:8080/register | Halaman Registrasi |
+| http://localhost:8081 | Halaman Utama |
+| http://localhost:8081/api/health | API Health Check |
+| http://localhost:8081/login | Halaman Login |
+| http://localhost:8081/register | Halaman Registrasi |
 
 ### Default SuperAdmin
 
@@ -261,15 +261,19 @@ docker compose exec server node seed.js
 ### Arsitektur
 
 ```
-Internet → System Nginx (:80/:443 SSL, pawangcuaca.conf)
-  → proxy_pass http://127.0.0.1:8080
-    → Docker Nginx (:8080 → container :80, pawangcuaca-docker.conf)
-        ├── /           → Client Container (React SPA)
-        ├── /api/*      → Server Container (:3004 Express)
-        └── /uploads/*  → Server Container (:3004 Express Static)
-                                ↓
+Internet → Cloudflare (DNS + SSL + Tunnel)
+  → http://localhost:8081 (VPS via cloudflared)
+    → Docker Nginx (:8081 -> container :80)
+        ├── /           -> Client Container (React SPA)
+        ├── /api/*      -> Server Container (:3004 Express)
+        └── /uploads/*  -> Server Container (:3004 Express Static)
+                                |
                         DB Container (PostgreSQL :5432, host :5433)
 ```
+
+### Cloudflare Tunnel Setup
+
+Domain `pawangcuaca.space` menggunakan **Cloudflare Tunnel** (bukan system nginx) untuk routing traffic ke VPS. Pastikan tunnel config point ke `http://localhost:8081`.
 
 ### Setup Awal (hanya sekali)
 
@@ -312,57 +316,18 @@ docker compose up -d --build
 docker compose exec server node seed.js
 ```
 
-#### 6. Setup System Nginx (SSL reverse proxy)
+#### 6. Setup Cloudflare Tunnel
 
-```bash
-# Copy config
-sudo cp /home/pawangcuaca/pawangcuaca/nginx/pawangcuaca.conf /etc/nginx/sites-available/pawangcuaca
-sudo ln -sf /etc/nginx/sites-available/pawangcuaca /etc/nginx/sites-enabled/pawangcuaca
-
-# Setup SSL (pastikan DNS pawangcuaca.space sudah mengarah ke VPS IP)
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d pawangcuaca.space -d www.pawangcuaca.space
-
-# Test & reload
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-`/etc/nginx/sites-available/pawangcuaca` (setelah certbot):
-
-```nginx
-server {
-    listen 80;
-    server_name pawangcuaca.space www.pawangcuaca.space;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name pawangcuaca.space www.pawangcuaca.space;
-
-    ssl_certificate     /etc/letsencrypt/live/pawangcuaca.space/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/pawangcuaca.space/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    client_max_body_size 55M;
-
-    location / {
-        proxy_pass         http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_read_timeout 30s;
-    }
-}
-```
+Di Cloudflare Dashboard -> Zero Trust -> Networks -> Tunnels:
+- Buat tunnel baru (atau edit yang sudah ada)
+- Add public hostname: `pawangcuaca.space` -> Service: `http://localhost:8081`
+- Optional: `www.pawangcuaca.space` -> Service: `http://localhost:8081`
 
 #### 7. Verify
 
 ```bash
 docker compose ps
-curl -s http://localhost:8080/api/health
+curl -s http://localhost:8081/api/health
 ```
 
 Buka https://pawangcuaca.space di browser.
@@ -373,45 +338,62 @@ Buka https://pawangcuaca.space di browser.
 
 Setiap kali kamu push perubahan ke repository, jalankan ini di VPS:
 
-```bash
-# 1. SSH ke VPS
-ssh pawangcuaca@<vps-ip>
+### Ubah Backend Saja
 
-# 2. Pull perubahan terbaru
+```bash
 cd /home/pawangcuaca/pawangcuaca
 git pull origin main
-
-# 3. Rebuild & restart semua container
-docker compose up -d --build
-
-# 4. Jalankan migration jika ada perubahan schema
-docker compose exec server node src/db/migrate.js
-
-# 5. Verify
-docker compose ps
-docker compose logs server --tail 20
-curl -s http://localhost:8080/api/health
+docker compose up -d --build server
 ```
 
-Kalau ada perubahan di `nginx/pawangcuaca.conf` (system nginx):
+### Ubah Frontend Saja
 
 ```bash
-sudo cp /home/pawangcuaca/pawangcuaca/nginx/pawangcuaca.conf /etc/nginx/sites-available/pawangcuaca
-sudo nginx -t && sudo systemctl reload nginx
+cd /home/pawangcuaca/pawangcuaca
+git pull origin main
+docker compose up -d --build client nginx
 ```
 
-### Quick Reference: Apa yang Perlu Di-rebuild?
+> Client rebuild diperlukan karena Vite bake `VITE_API_BASE_URL` saat build time. Nginx perlu restart biar reconnect ke client container baru.
 
-| Yang Berubah | Command | Perlu Nginx Reload? |
-|---|---|---|
-| Server code saja | `docker compose up -d --build server` | Tidak |
-| Client code saja | `docker compose up -d --build client` | Tidak |
-| Database migration | `docker compose exec server node src/db/migrate.js` | Tidak |
-| System nginx config | `sudo systemctl reload nginx` | Ya |
-| Root `.env` (DB/JWT/API URL) | `docker compose up -d --build` | Tidak |
-| Semua berubah | `docker compose up -d --build` | Tidak |
+### Ubah Backend + Frontend
 
-> **Catatan:** Jika `CLIENT_API_URL` di root `.env` berubah, **client harus di-rebuild** karena `VITE_API_BASE_URL` di-bake saat build time. `docker compose up -d --build client` sudah cukup.
+```bash
+cd /home/pawangcuaca/pawangcuaca
+git pull origin main
+docker compose up -d --build
+```
+
+### Ada Database Migration Baru
+
+```bash
+cd /home/pawangcuaca/pawangcuaca
+git pull origin main
+docker compose up -d --build server
+docker compose exec server node src/db/migrate.js
+```
+
+### Ubah Root `.env` (DB password, JWT secret, API URL)
+
+```bash
+cd /home/pawangcuaca/pawangcuaca
+# Edit .env lalu:
+docker compose up -d --build
+```
+
+> Jika `CLIENT_API_URL` berubah, client **wajib** di-rebuild karena env di-bake saat build time.
+
+### Quick Reference
+
+| Yang Berubah | Command |
+|---|---|
+| Backend code saja | `git pull && docker compose up -d --build server` |
+| Frontend code saja | `git pull && docker compose up -d --build client nginx` |
+| Backend + Frontend | `git pull && docker compose up -d --build` |
+| Database migration | `docker compose exec server node src/db/migrate.js` |
+| Root `.env` berubah | `docker compose up -d --build` |
+| Docker nginx config | `git pull && docker compose up -d --build nginx` |
+| Semua berubah sekaligus | `git pull && docker compose up -d --build` |
 
 ---
 
@@ -424,6 +406,7 @@ docker compose logs -f
 # Lihat logs container tertentu
 docker compose logs -f server
 docker compose logs -f db
+docker compose logs -f nginx
 
 # Restart service tertentu
 docker compose restart server
@@ -456,11 +439,11 @@ docker stats pawangcuaca_server pawangcuaca_db
 |---|---|
 | Container DB terus restart | `docker compose logs db` — cek volume korup? Coba `docker compose down -v && docker compose up -d --build` |
 | Migration tidak jalan | Hanya jalan saat volume `pgdata` baru. Jalankan manual: `docker compose exec server node src/db/migrate.js` |
-| Port 8080 sudah dipakai | Cek `sudo lsof -i :8080`, stop service-nya, atau ganti port di `docker-compose.yml` |
+| Port 8081 sudah dipakai | Cek `sudo lsof -i :8081`, stop service-nya, atau ganti port di `docker-compose.yml` |
 | Upload file hilang setelah restart | Jangan `docker compose down -v`. Volume `uploads` harus tetap ada |
 | Server tidak bisa konek ke DB | `docker compose ps` — pastikan DB healthy. `docker compose logs server` |
-| Client build gagal | `docker compose logs client` — cek dependencies & `CLIENT_API_URL` |
-| SSL error | Cek cert: `sudo certbot certificates`. Renew: `sudo certbot renew` |
+| Client build gagal | `docker compose logs client` — cek dependencies & `CLIENT_API_URL` di root `.env` |
+| 502 Bad Gateway (Cloudflare) | Pastikan container jalan: `docker compose ps`. Cek tunnel point ke `http://localhost:8081` |
 | Container otomatis jalan setelah reboot | `docker compose` sudah set `restart: unless-stopped`, pastikan Docker service juga auto-start: `sudo systemctl enable docker` |
 
 ---
@@ -470,38 +453,38 @@ docker stats pawangcuaca_server pawangcuaca_db
 ### Alur Registrasi & Login
 
 ```
-User → Register (pilih role: Produsen/Konsumen) → Status: PENDING
-                                                     ↓
-SuperAdmin → Dashboard → Approve/Reject User
-                                                     ↓
-User → Login (jika approved) → JWT Token → Akses platform sesuai role
+User -> Register (pilih role: Produsen/Konsumen) -> Status: PENDING
+                                                      |
+SuperAdmin -> Dashboard -> Approve/Reject User
+                                                      |
+User -> Login (jika approved) -> JWT Token -> Akses platform sesuai role
 ```
 
 ### Alur Produsen (Kontributor Laporan)
 
 ```
-Produsen Login → Buat Laporan Cuaca (judul, deskripsi, media, lokasi)
-               → Buat Cuaca Thread (storytelling cuaca berkelanjutan)
-               → Tambah post ke thread (update cuaca real-time)
-               → Lihat Pawang Level (gamifikasi reputasi)
+Produsen Login -> Buat Laporan Cuaca (judul, deskripsi, media, lokasi)
+               -> Buat Cuaca Thread (storytelling cuaca berkelanjutan)
+               -> Tambah post ke thread (update cuaca real-time)
+               -> Lihat Pawang Level (gamifikasi reputasi)
 ```
 
 ### Alur Konsumen (Validator Laporan)
 
 ```
-Konsumen Login → Browse Laporan Cuaca (feed, filter lokasi)
-               → Lihat Detail Laporan (media, data cuaca)
-               → Vote Akurasi (Akurat / Meleset)
-               → Browse Cuaca Threads (ikuti cerita cuaca)
-               → Lihat Cuaca Real-time + Peta Interaktif
+Konsumen Login -> Browse Laporan Cuaca (feed, filter lokasi)
+               -> Lihat Detail Laporan (media, data cuaca)
+               -> Vote Akurasi (Akurat / Meleset)
+               -> Browse Cuaca Threads (ikuti cerita cuaca)
+               -> Lihat Cuaca Real-time + Peta Interaktif
 ```
 
 ### Alur SuperAdmin
 
 ```
-SuperAdmin Login → Dashboard (statistik platform)
-                → Manajemen User (approve/reject/delete)
-                → Akses penuh ke semua fitur
+SuperAdmin Login -> Dashboard (statistik platform)
+                -> Manajemen User (approve/reject/delete)
+                -> Akses penuh ke semua fitur
 ```
 
 ---
@@ -586,9 +569,9 @@ SuperAdmin Login → Dashboard (statistik platform)
 | Kolom | Tipe | Constraint | Deskripsi |
 |---|---|---|---|
 | id | SERIAL | PK | ID unik laporan |
-| user_id | INTEGER | FK → users, NOT NULL | Pemilik laporan |
-| location_id | INTEGER | FK → locations | Lokasi laporan |
-| thread_post_id | INTEGER | FK → thread_posts | Link ke thread post (opsional) |
+| user_id | INTEGER | FK -> users, NOT NULL | Pemilik laporan |
+| location_id | INTEGER | FK -> locations | Lokasi laporan |
+| thread_post_id | INTEGER | FK -> thread_posts | Link ke thread post (opsional) |
 | title | VARCHAR(255) | NOT NULL | Judul laporan |
 | description | TEXT | — | Deskripsi detail |
 | weather_condition | VARCHAR(100) | — | Kondisi cuaca |
@@ -608,8 +591,8 @@ SuperAdmin Login → Dashboard (statistik platform)
 | Kolom | Tipe | Constraint | Deskripsi |
 |---|---|---|---|
 | id | SERIAL | PK | — |
-| report_id | INTEGER | FK → reports, UNIQUE(user) | Laporan yang di-vote |
-| user_id | INTEGER | FK → users, UNIQUE(report) | Voter |
+| report_id | INTEGER | FK -> reports, UNIQUE(user) | Laporan yang di-vote |
+| user_id | INTEGER | FK -> users, UNIQUE(report) | Voter |
 | vote_type | VARCHAR(10) | CHECK | upvote/downvote |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | — |
 
@@ -618,8 +601,8 @@ SuperAdmin Login → Dashboard (statistik platform)
 | Kolom | Tipe | Constraint | Deskripsi |
 |---|---|---|---|
 | id | SERIAL | PK | — |
-| user_id | INTEGER | FK → users | Pembuat thread |
-| location_id | INTEGER | FK → locations | Lokasi thread |
+| user_id | INTEGER | FK -> users | Pembuat thread |
+| location_id | INTEGER | FK -> locations | Lokasi thread |
 | title | VARCHAR(255) | NOT NULL | Judul thread |
 | status | VARCHAR(20) | DEFAULT 'active' | active/archived |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | — |
@@ -630,8 +613,8 @@ SuperAdmin Login → Dashboard (statistik platform)
 | Kolom | Tipe | Constraint | Deskripsi |
 |---|---|---|---|
 | id | SERIAL | PK | — |
-| thread_id | INTEGER | FK → threads | Thread induk |
-| user_id | INTEGER | FK → users | Penulis post |
+| thread_id | INTEGER | FK -> threads | Thread induk |
+| user_id | INTEGER | FK -> users | Penulis post |
 | content | TEXT | NOT NULL | Isi post |
 | media_url | VARCHAR(500) | — | URL media |
 | media_type | VARCHAR(20) | CHECK | image/video/gif |
