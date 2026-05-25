@@ -44,6 +44,7 @@ function validate(schema) {
 }
 
 module.exports = {
+  validate,
   validateWeatherQuery: validate(weatherQuerySchema),
   validateVoteBody: validate(voteBodySchema),
   validateVotesQuery: validate(votesQuerySchema),

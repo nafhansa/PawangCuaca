@@ -32,10 +32,24 @@ class ExternalServiceError extends AppError {
   }
 }
 
+class UnauthorizedError extends AppError {
+  constructor(message = 'Tidak memiliki akses') {
+    super(message, 401, 'UNAUTHORIZED');
+  }
+}
+
+class ForbiddenError extends AppError {
+  constructor(message = 'Akses ditolak') {
+    super(message, 403, 'FORBIDDEN');
+  }
+}
+
 module.exports = {
   AppError,
   ValidationError,
   NotFoundError,
   ConflictError,
   ExternalServiceError,
+  UnauthorizedError,
+  ForbiddenError,
 };

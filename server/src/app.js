@@ -1,6 +1,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
 
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const { testConnection } = require('./db/pool');
@@ -11,6 +12,10 @@ const logger = require('./utils/logger');
 const weatherRoutes = require('./routes/weather');
 const votesRoutes = require('./routes/votes');
 const locationsRoutes = require('./routes/locations');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const reportRoutes = require('./routes/reports');
+const threadRoutes = require('./routes/threads');
 
 const app = express();
 
@@ -19,7 +24,8 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       connectSrc: ["'self'", "https://api.open-meteo.com", "https://nominatim.openstreetmap.org"],
-      imgSrc: ["'self'", "data:"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      mediaSrc: ["'self'", "blob:"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -34,8 +40,8 @@ app.use(helmet({
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'X-Voter-Hash'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Voter-Hash'],
   optionsSuccessStatus: 200,
 }));
 
@@ -48,6 +54,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(globalLimiter);
 
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.get('/api/health', async (req, res) => {
   const dbConnected = await testConnection();
   res.json({
@@ -59,6 +67,10 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/threads', threadRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/votes', votesRoutes);
 app.use('/api/locations', locationsRoutes);

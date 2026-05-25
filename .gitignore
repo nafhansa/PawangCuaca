@@ -10,3 +10,6 @@ logs/
 *.swp
 *.swo
 *~
+uploads/
+!server/uploads/.gitkeep
+certbot/
