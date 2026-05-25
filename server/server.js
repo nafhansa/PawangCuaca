@@ -2,7 +2,7 @@ require('dotenv').config({ path: __dirname + '/.env' });
 const app = require('./src/app');
 const logger = require('./src/utils/logger');
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3004;
 
 app.listen(PORT, () => {
   logger.info(`PawangCuaca API server running on port ${PORT}`);
