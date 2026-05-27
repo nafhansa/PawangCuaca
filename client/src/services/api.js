@@ -42,7 +42,7 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
+  login: (identifier, password) => api.post('/auth/login', { identifier, password }),
   register: (data) => api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/me', data),

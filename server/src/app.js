@@ -69,6 +69,9 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/weather', weatherRoutes);
+app.use('/api/votes', votesRoutes);
+app.use('/api/locations', locationsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/threads', threadRoutes);
