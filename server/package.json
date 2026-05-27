@@ -9,7 +9,7 @@
     "migrate": "node src/db/migrate.js",
     "backfill-labels": "node src/scripts/backfillLabels.js",
     "seed": "node seed.js",
-    "seed:data": "node seedData.js",
+    "seed:data": "node --env-file=../.env seedData.js",
     "test": "jest --coverage",
     "test:watch": "jest --watch"
   },
