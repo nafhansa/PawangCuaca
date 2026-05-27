@@ -106,17 +106,17 @@ export default function LatestVotesPage() {
           filteredVotes.map((vote, index) => (
             <motion.div
               key={vote.id}
-              className="vote-card"
+              className={`vote-card ${vote.vote_type}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
               <div className="vote-card-header">
-                <div className="vote-card-badge">
-                  <span className={`vote-icon ${vote.vote_type}`}>
+                <div className={`vote-card-badge ${vote.vote_type}`}>
+                  <span className="vote-icon">
                     {vote.vote_type === 'upvote' ? '✅' : '❌'}
                   </span>
-                  <span className={`vote-type-text ${vote.vote_type}`}>
+                  <span className="vote-type-text">
                     {vote.vote_type === 'upvote' ? 'Akurat' : 'Meleset'}
                   </span>
                 </div>
@@ -129,21 +129,25 @@ export default function LatestVotesPage() {
                   <span>📍</span>
                   <span>{vote.label || vote.geohash}</span>
                 </div>
-                <div className="vote-coords">
-                  <span>🌐 {vote.lat.toFixed(4)}, {vote.lon.toFixed(4)}</span>
-                </div>
-                {vote.user_username && (
-                  <div className="vote-user">
-                    <span>👤 @{vote.user_username}</span>
+                <div className="vote-meta-row">
+                  <div className="vote-coords">
+                    <span>🌐</span>
+                    <span>{vote.lat.toFixed(4)}, {vote.lon.toFixed(4)}</span>
                   </div>
-                )}
+                  {vote.user_username && (
+                    <div className="vote-user">
+                      <span>👤</span>
+                      <span>@{vote.user_username}</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="vote-card-footer">
-                <ShareButton 
-                  vote={vote} 
-                  label={vote.label} 
-                  lat={vote.lat} 
-                  lon={vote.lon} 
+                <ShareButton
+                  vote={vote}
+                  label={vote.label}
+                  lat={vote.lat}
+                  lon={vote.lon}
                 />
               </div>
             </motion.div>
