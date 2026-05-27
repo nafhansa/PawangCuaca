@@ -24,15 +24,6 @@ export default function ReportsFeedPage() {
     }
   };
 
-  const handleVote = async (reportId, voteType) => {
-    try {
-      await reportsApi.vote(reportId, voteType);
-      loadReports();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
   return (
     <motion.div className="feed-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="feed-header">

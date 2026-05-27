@@ -27,7 +27,7 @@ export default function ThreadsListPage() {
       <div className="feed-header">
         <h2 className="page-title">Cuaca Threads</h2>
         {user?.role === 'produsen' && (
-          <Link to="/threads/new" className="btn-primary">+ Thread Baru</Link>
+          <Link to="/dashboard/threads/baru" className="btn-primary">+ Thread Baru</Link>
         )}
       </div>
 
@@ -36,13 +36,13 @@ export default function ThreadsListPage() {
       ) : threads.length === 0 ? (
         <div className="empty-state">
           <p>Belum ada thread cuaca.</p>
-          {user?.role === 'produsen' && <Link to="/threads/new" className="btn-primary">Mulai Thread Pertama</Link>}
+          {user?.role === 'produsen' && <Link to="/dashboard/threads/baru" className="btn-primary">Mulai Thread Pertama</Link>}
         </div>
       ) : (
         <>
           <div className="threads-list">
             {threads.map((thread) => (
-              <Link to={`/threads/${thread.id}`} key={thread.id} className="thread-card">
+              <Link to={`/dashboard/threads/${thread.id}`} key={thread.id} className="thread-card">
                 {thread.cover_media && (
                   <div className="thread-cover">
                     <img src={thread.cover_media} alt="" />

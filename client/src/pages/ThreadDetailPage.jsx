@@ -86,6 +86,12 @@ export default function ThreadDetailPage() {
       </div>
 
       <div className="thread-posts">
+        {thread.posts?.length === 0 && (
+          <div className="empty-state">
+            <p>Belum ada post di thread ini.</p>
+            {user?.role === 'produsen' && <p className="empty-hint">Jadilah yang pertama berbagi update cuaca!</p>}
+          </div>
+        )}
         {thread.posts?.map((post, idx) => (
           <motion.div key={post.id} className="thread-post-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
             <div className="post-header">
