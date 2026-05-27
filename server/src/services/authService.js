@@ -27,18 +27,18 @@ const register = async ({ username, email, password, role }) => {
   return result.rows[0];
 };
 
-const login = async ({ email, password }) => {
+const login = async ({ identifier, password }) => {
   const result = await pool.query(
-    'SELECT id, username, email, password_hash, role, status, pawang_level, avatar_url FROM users WHERE email = $1',
-    [email]
+    'SELECT id, username, email, password_hash, role, status, pawang_level, avatar_url FROM users WHERE email = $1 OR username = $1',
+    [identifier]
   );
   if (result.rows.length === 0) {
-    throw new UnauthorizedError('Email atau password salah.');
+    throw new UnauthorizedError('Email/username atau password salah.');
   }
   const user = result.rows[0];
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
-    throw new UnauthorizedError('Email atau password salah.');
+    throw new UnauthorizedError('Email/username atau password salah.');
   }
   if (user.status === 'pending') {
     throw new ForbiddenError('Akun belum disetujui oleh admin. Silakan tunggu.');
