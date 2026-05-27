@@ -108,7 +108,7 @@ export default function ReportDetailPage() {
 
         {(isOwner || user?.role === 'superadmin') && (
           <div className="detail-actions">
-            {isOwner && <button className="btn-secondary" onClick={() => navigate(`/reports/${id}/edit`)}>Edit</button>}
+            {isOwner && <button className="btn-secondary" onClick={() => navigate(`/dashboard/laporan/${id}/edit`)}>Edit</button>}
             <button className="btn-danger" onClick={handleDelete}>Hapus</button>
           </div>
         )}

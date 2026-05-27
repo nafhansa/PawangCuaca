@@ -53,7 +53,7 @@ export default function ReportsFeedPage() {
         <>
           <div className="reports-grid">
             {reports.map((report) => (
-              <Link to={`/reports/${report.id}`} key={report.id} className="report-card">
+              <Link to={`/dashboard/laporan/${report.id}`} key={report.id} className="report-card">
                 {report.media_url && (
                   <div className="report-media-thumb">
                     {report.media_type === 'video' ? (
