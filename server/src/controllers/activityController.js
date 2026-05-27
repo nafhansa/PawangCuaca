@@ -2,7 +2,7 @@ const activityService = require('../services/activityService');
 
 async function getMyActivity(req, res, next) {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const limit = parseInt(req.query.limit, 10) || 50;
     const activities = await activityService.getUserActivity(userId, Math.min(limit, 100));
 

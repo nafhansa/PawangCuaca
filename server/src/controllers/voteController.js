@@ -12,7 +12,7 @@ async function submitVote(req, res, next) {
 
     const location = await voteService.getOrCreateLocation(lat, lon);
 
-    const userId = req.user?.id || null;
+    const userId = req.user?.userId || null;
 
     const result = await voteService.submitVote(
       location.id,
@@ -49,7 +49,7 @@ async function getRecentVotes(req, res, next) {
 
 async function getMyVotes(req, res, next) {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const limit = parseInt(req.query.limit, 10) || 50;
     const votes = await voteService.getUserVotes(userId, Math.min(limit, 100));
 
