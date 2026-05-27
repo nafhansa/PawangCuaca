@@ -41,24 +41,28 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label className="form-label">Email atau Username</label>
+            <label htmlFor="identifier" className="form-label">Email atau Username</label>
             <input
+              id="identifier"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="form-input"
-              placeholder="Email atau username"
+              placeholder="nama@email.com atau username"
+              autoComplete="username"
               required
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label htmlFor="password" className="form-label">Password</label>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="form-input"
               placeholder="Masukkan password"
+              autoComplete="current-password"
               required
             />
           </div>
