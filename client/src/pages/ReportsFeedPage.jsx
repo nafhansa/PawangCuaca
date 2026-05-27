@@ -38,7 +38,7 @@ export default function ReportsFeedPage() {
       <div className="feed-header">
         <h2 className="page-title">Laporan Cuaca</h2>
         {user?.role === 'produsen' && (
-          <Link to="/reports/new" className="btn-primary">+ Buat Laporan</Link>
+          <Link to="/dashboard/laporan/baru" className="btn-primary">+ Buat Laporan</Link>
         )}
       </div>
 
@@ -47,7 +47,7 @@ export default function ReportsFeedPage() {
       ) : reports.length === 0 ? (
         <div className="empty-state">
           <p>Belum ada laporan cuaca.</p>
-          {user?.role === 'produsen' && <Link to="/reports/new" className="btn-primary">Buat Laporan Pertama</Link>}
+          {user?.role === 'produsen' && <Link to="/dashboard/laporan/baru" className="btn-primary">Buat Laporan Pertama</Link>}
         </div>
       ) : (
         <>
