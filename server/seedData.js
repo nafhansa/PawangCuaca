@@ -185,7 +185,10 @@ async function seedUsers() {
   }
 
   for (const u of USERS_DATA) {
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [u.email]);
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE email = $1 OR username = $2',
+      [u.email, u.username]
+    );
     if (existing.rows.length > 0) {
       ids[u.username] = existing.rows[0].id;
       continue;
