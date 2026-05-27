@@ -18,7 +18,8 @@ async function runMigrations() {
       await pool.query(sql);
       console.log(`✅ ${file} completed`);
     } catch (err) {
-      if (err.code === '42P07') {
+      const alreadyExists = ['42P07', '42701', '42710'].includes(err.code);
+      if (alreadyExists) {
         console.log(`⏭️  ${file} already exists, skipping`);
       } else {
         console.error(`❌ ${file} failed:`, err.message);
